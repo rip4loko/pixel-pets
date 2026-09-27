@@ -1,0 +1,41 @@
+name: Build IPA
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer XcodeGen
+        run: brew install xcodegen
+
+      - name: Générer le projet Xcode
+        run: xcodegen generate
+
+      - name: Compiler (sans signature)
+        run: |
+          xcodebuild \
+            -project PixelPets.xcodeproj \
+            -scheme PixelPets \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Créer le fichier .ipa
+        run: |
+          mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/PixelPets.app Payload/
+          zip -qr PixelPets.ipa Payload
+
+      - name: Mettre l'IPA en téléchargement
+        uses: actions/upload-artifact@v4
+        with:
+          name: PixelPets-ipa
+          path: PixelPets.ipa
