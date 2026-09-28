@@ -49,6 +49,10 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        UIAppFonts:
+          - ParadeLeft.ttf
+          - ParadeRight.ttf
+          - ParadeWide.ttf
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.colindelacroix.pixelpets.widget

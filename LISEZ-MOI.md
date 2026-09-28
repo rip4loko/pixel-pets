@@ -19,10 +19,13 @@
    - Réglages › Général › **VPN et gestion de l'appareil** › ton Apple ID › **Faire confiance**.
 
 ## 3. Utiliser
-- Ouvre Pixel Pets, choisis un pet et appuie sur **Dans l'île**.
-- Appuie longtemps sur l'île pour l'ouvrir. Tu y trouves Nourrir, Jouer et 🔀 (autre pet).
-- Chaque fois que tu rouvres l'app, un pet au hasard prend la place.
-- iOS retire le pet après environ 8 h. Il suffit de le remettre.
+- Ouvre Pixel Pets : le défilé démarre tout seul, à un endroit au hasard.
+- Île compacte : les persos passent d'un côté à l'autre, derrière la caméra.
+- Appui long sur l'île ou écran verrouillé : une bande où toute la troupe défile.
+- iOS retire le défilé après environ 8 h. Rouvrir l'app le relance.
+
+## Comment ça marche (pour Claude)
+Une Live Activity ne peut pas s'animer librement. Le seul élément qui bouge tout seul est un minuteur système. `tools/make_fonts.py` fabrique des polices où chaque texte « mm:ss » est remplacé par une image du défilé : le minuteur devient un film d'1 h à 1 image/seconde. Après un changement de persos dans `Shared/PetData.swift`, relancer `python3 tools/make_fonts.py` (il faut `pip install fonttools pillow`).
 
 ## Chaque semaine
 Avec un compte gratuit, l'app expire après **7 jours**. Rebranche l'iPhone et refais « Start » dans Sideloadly. Tu peux aussi activer le rafraîchissement automatique de Sideloadly.

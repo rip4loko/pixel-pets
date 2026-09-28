@@ -53,32 +53,3 @@ struct PixelSprite: View {
         .frame(width: 16 * pixel, height: 16 * pixel, alignment: .topLeading)
     }
 }
-
-/// Les 3 jauges façon Tamagotchi.
-struct StatBars: View {
-    let state: PetAttributes.ContentState
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            bar("Ventre", state.ventre, Color(hex: 0xffd166))
-            bar("Humeur", state.humeur, Color(hex: 0xff6fa3))
-            bar("Énergie", state.energie, Color(hex: 0x9d7be8))
-        }
-    }
-
-    private func bar(_ label: String, _ value: Int, _ color: Color) -> some View {
-        HStack(spacing: 6) {
-            Text(label)
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundStyle(Color.white.opacity(0.7))
-                .frame(width: 44, alignment: .leading)
-            HStack(spacing: 2) {
-                ForEach(0..<10, id: \.self) { i in
-                    Rectangle()
-                        .fill(i < value ? color : Color.white.opacity(0.15))
-                        .frame(width: 6, height: 7)
-                }
-            }
-        }
-    }
-}

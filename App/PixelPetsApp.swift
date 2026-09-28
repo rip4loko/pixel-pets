@@ -2,6 +2,10 @@ import SwiftUI
 
 @main
 struct PixelPetsApp: App {
+    init() {
+        Parade.registerFontsFromWidget()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -11,13 +15,13 @@ struct PixelPetsApp: App {
 }
 
 struct ContentView: View {
-    @State private var selected = 0
-    @State private var status = "Choisis un pet, puis mets-le dans l'île."
+    @State private var status = "Les persos défilent dans l'île, au hasard."
+    @State private var running = Parade.isRunning
+    @State private var previewStart = Parade.randomStart()
     @Environment(\.scenePhase) private var scenePhase
 
-    private let columns = [GridItem(.adaptive(minimum: 96), spacing: 12)]
+    private let columns = [GridItem(.adaptive(minimum: 72), spacing: 10)]
     private let pink = Color(hex: 0xff6fa3)
-    private let lilac = Color(hex: 0x9d7be8)
 
     var body: some View {
         ZStack {
@@ -31,27 +35,44 @@ struct ContentView: View {
                         .font(.subheadline)
                         .foregroundStyle(Color.white.opacity(0.7))
 
-                    HStack(spacing: 10) {
-                        actionButton("Dans l'île", pink) {
-                            status = await PetEngine.start(petIndex: selected)
+                    preview
+
+                    Button {
+                        Task {
+                            if running {
+                                await Parade.stop()
+                                status = "L'île est vide."
+                            } else {
+                                status = await Parade.start()
+                            }
+                            running = Parade.isRunning
                         }
-                        actionButton("Au hasard", lilac) {
-                            let i = PetEngine.randomOther(than: selected)
-                            selected = i
-                            status = await PetEngine.start(petIndex: i)
-                        }
-                        actionButton("Retirer", Color.white.opacity(0.25)) {
-                            await PetEngine.stopAll()
-                            status = "L'île est vide."
-                        }
+                    } label: {
+                        Text(running ? "Arrêter le défilé" : "Lancer le défilé")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity, minHeight: 50)
+                            .background(RoundedRectangle(cornerRadius: 25)
+                                .fill(running ? Color.white.opacity(0.2) : pink))
+                            .foregroundStyle(.white)
                     }
+                    .buttonStyle(.plain)
+
+                    Text("La troupe")
+                        .font(.system(size: 20, weight: .heavy, design: .monospaced))
+                        .foregroundStyle(.white)
+                        .padding(.top, 6)
 
                     TimelineView(.periodic(from: .now, by: 0.35)) { timeline in
                         let tick = Int(timeline.date.timeIntervalSinceReferenceDate / 0.35)
-                        let frame = (tick % 26 < 2) ? 2 : tick % 2
-                        LazyVGrid(columns: columns, spacing: 12) {
+                        LazyVGrid(columns: columns, spacing: 10) {
                             ForEach(Pet.all.indices, id: \.self) { i in
-                                petCard(i, frame: frame)
+                                // Chacun bouge à son rythme.
+                                let t = tick + i * 7
+                                PixelSprite(pet: Pet.all[i], frame: (t % 23 < 2) ? 2 : t % 2, pixel: 3.5)
+                                    .padding(8)
+                                    .frame(maxWidth: .infinity)
+                                    .background(RoundedRectangle(cornerRadius: 14).fill(Color(hex: 0x1e1a29)))
+                                    .accessibilityLabel(Pet.all[i].name)
                             }
                         }
                     }
@@ -60,46 +81,35 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { _, phase in
-            // À chaque retour dans l'app, un nouveau pet passe dans l'île.
-            if phase == .active && PetEngine.isRunning {
-                Task { await PetEngine.shuffle() }
+            // À chaque ouverture : le défilé repart au hasard, pour 8 h de plus.
+            guard phase == .active else { return }
+            previewStart = Parade.randomStart()
+            Task {
+                status = await Parade.start()
+                running = Parade.isRunning
             }
         }
     }
 
-    private func petCard(_ i: Int, frame: Int) -> some View {
-        let pet = Pet.all[i]
-        return Button {
-            selected = i
-        } label: {
-            VStack(spacing: 6) {
-                PixelSprite(pet: pet, frame: frame, pixel: 4)
-                Text(pet.name)
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+    /// Ce que tu verras dans l'île et sur l'écran verrouillé.
+    private var preview: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 0) {
+                ParadeStrip(start: previewStart, font: Parade.fontLeft, width: Parade.sideWidth)
+                Capsule().fill(Color(hex: 0x2a2436)).frame(width: 60, height: 10)
+                    .padding(.horizontal, 12)
+                ParadeStrip(start: previewStart, font: Parade.fontRight, width: Parade.sideWidth)
             }
-            .padding(10)
-            .frame(maxWidth: .infinity)
-            .background(RoundedRectangle(cornerRadius: 16).fill(Color(hex: 0x1e1a29)))
-            .overlay(RoundedRectangle(cornerRadius: 16)
-                .stroke(i == selected ? pink : Color.clear, lineWidth: 2))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(pet.name)
-    }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(Capsule().fill(.black))
 
-    private func actionButton(_ title: String, _ color: Color, action: @escaping @MainActor () async -> Void) -> some View {
-        Button {
-            Task { await action() }
-        } label: {
-            Text(title)
-                .font(.subheadline.bold())
-                .frame(maxWidth: .infinity, minHeight: 44)
-                .background(RoundedRectangle(cornerRadius: 22).fill(color))
-                .foregroundStyle(.white)
+            ParadeStrip(start: previewStart, font: Parade.fontWide, width: Parade.wideWidth)
+                .frame(maxWidth: .infinity)
+                .clipped()
+                .padding(.vertical, 10)
+                .background(RoundedRectangle(cornerRadius: 18).fill(Color.black.opacity(0.5)))
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
     }
 }
