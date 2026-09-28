@@ -66,22 +66,29 @@ enum Parade {
     }
 }
 
-/// Une bande du défilé. Le texte du minuteur est remplacé par l'image par la police.
+/// Une bande du défilé : une couche de minuteur par couleur, empilées.
+/// La police remplace le texte du minuteur par l'image (voir tools/make_fonts.py).
 struct ParadeStrip: View {
     let start: Date
     let font: String
     let width: CGFloat
 
     var body: some View {
-        Text(timerInterval: start...start.addingTimeInterval(172_800), countsDown: false)
-            .font(.custom(font, fixedSize: Parade.fontSize))
-            .lineLimit(1)
-            // L'image est toujours à la fin du texte (après « 1: » quand il y a des heures) :
-            // on garde la taille naturelle du texte et on cale sa fin sur le bord droit.
-            .multilineTextAlignment(.trailing)
-            .fixedSize()
-            .frame(width: width, height: Parade.fontSize, alignment: .trailing)
-            .clipped()
-            .accessibilityLabel("Défilé de Pixel Pets")
+        ZStack(alignment: .trailing) {
+            ForEach(Parade.layerColors.indices, id: \.self) { layer in
+                Text(timerInterval: start...start.addingTimeInterval(172_800), countsDown: false)
+                    .font(.custom("\(font)\(layer)", fixedSize: Parade.fontSize))
+                    .foregroundStyle(Color(hex: Parade.layerColors[layer]))
+                    .contentTransition(.identity)
+                    .lineLimit(1)
+                    // L'image est toujours à la fin du texte (après « 1: » quand il y a des heures) :
+                    // on garde la taille naturelle du texte et on cale sa fin sur le bord droit.
+                    .multilineTextAlignment(.trailing)
+                    .fixedSize()
+            }
+        }
+        .frame(width: width, height: Parade.fontSize, alignment: .trailing)
+        .clipped()
+        .accessibilityLabel("Défilé de Pixel Pets")
     }
 }

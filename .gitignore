@@ -3,3 +3,5 @@ build/
 *.xcodeproj/
 PixelPets.ipa
 PixelPets-ipa/
+App/Info.plist
+Widget/Info.plist

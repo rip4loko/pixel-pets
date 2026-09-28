@@ -50,9 +50,36 @@ targets:
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
         UIAppFonts:
-          - ParadeLeft.ttf
-          - ParadeRight.ttf
-          - ParadeWide.ttf
+          - ParadeLeft0.ttf
+          - ParadeLeft1.ttf
+          - ParadeLeft2.ttf
+          - ParadeLeft3.ttf
+          - ParadeLeft4.ttf
+          - ParadeLeft5.ttf
+          - ParadeLeft6.ttf
+          - ParadeLeft7.ttf
+          - ParadeLeft8.ttf
+          - ParadeLeft9.ttf
+          - ParadeRight0.ttf
+          - ParadeRight1.ttf
+          - ParadeRight2.ttf
+          - ParadeRight3.ttf
+          - ParadeRight4.ttf
+          - ParadeRight5.ttf
+          - ParadeRight6.ttf
+          - ParadeRight7.ttf
+          - ParadeRight8.ttf
+          - ParadeRight9.ttf
+          - ParadeWide0.ttf
+          - ParadeWide1.ttf
+          - ParadeWide2.ttf
+          - ParadeWide3.ttf
+          - ParadeWide4.ttf
+          - ParadeWide5.ttf
+          - ParadeWide6.ttf
+          - ParadeWide7.ttf
+          - ParadeWide8.ttf
+          - ParadeWide9.ttf
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.colindelacroix.pixelpets.widget
