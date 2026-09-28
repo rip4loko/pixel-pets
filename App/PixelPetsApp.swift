@@ -2,10 +2,6 @@ import SwiftUI
 
 @main
 struct PixelPetsApp: App {
-    init() {
-        Parade.registerFontsFromWidget()
-    }
-
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -17,7 +13,6 @@ struct PixelPetsApp: App {
 struct ContentView: View {
     @State private var status = "Les persos défilent dans l'île, au hasard."
     @State private var running = Parade.isRunning
-    @State private var previewStart = Parade.randomStart()
     @Environment(\.scenePhase) private var scenePhase
 
     private let columns = [GridItem(.adaptive(minimum: 72), spacing: 10)]
@@ -83,7 +78,6 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, phase in
             // À chaque ouverture : le défilé repart au hasard, pour 8 h de plus.
             guard phase == .active else { return }
-            previewStart = Parade.randomStart()
             Task {
                 status = await Parade.start()
                 running = Parade.isRunning
@@ -91,25 +85,27 @@ struct ContentView: View {
         }
     }
 
-    /// Ce que tu verras dans l'île et sur l'écran verrouillé.
+    /// Un avant-goût du défilé, animé par l'app elle-même (bien plus fluide que dans l'île).
     private var preview: some View {
-        VStack(spacing: 14) {
-            HStack(spacing: 0) {
-                ParadeStrip(start: previewStart, font: Parade.fontLeft, width: Parade.sideWidth)
-                Capsule().fill(Color(hex: 0x2a2436)).frame(width: 60, height: 10)
-                    .padding(.horizontal, 12)
-                ParadeStrip(start: previewStart, font: Parade.fontRight, width: Parade.sideWidth)
+        TimelineView(.animation) { timeline in
+            GeometryReader { geo in
+                ForEach(0..<4, id: \.self) { k in
+                    walker(k, time: timeline.date.timeIntervalSinceReferenceDate, width: geo.size.width)
+                }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
-            .background(Capsule().fill(.black))
-
-            ParadeStrip(start: previewStart, font: Parade.fontWide, width: Parade.wideWidth)
-                .frame(maxWidth: .infinity)
-                .clipped()
-                .padding(.vertical, 10)
-                .background(RoundedRectangle(cornerRadius: 18).fill(Color.black.opacity(0.5)))
         }
-        .frame(maxWidth: .infinity)
+        .frame(height: 60)
+        .clipped()
+        .background(RoundedRectangle(cornerRadius: 18).fill(Color.black.opacity(0.5)))
+    }
+
+    private func walker(_ k: Int, time: Double, width: CGFloat) -> some View {
+        let lane = Double(width) + 64
+        let travel = time * 28 + Double(k) * lane / 4
+        let lap = Int(travel / lane)
+        let pet = Pet.all[(lap * 7 + k * 5) % Pet.all.count]
+        let x = travel.truncatingRemainder(dividingBy: lane) - 32
+        return PixelSprite(pet: pet, frame: Int(time * 3 + Double(k)) % 2, pixel: 3)
+            .position(x: x, y: 30)
     }
 }

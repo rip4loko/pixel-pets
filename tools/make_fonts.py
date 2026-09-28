@@ -149,9 +149,8 @@ def compact_schedule(rng):
         steps = []  # (x, dy, frame) seconde par seconde
         x = -16 if direction == 1 else width
         pause_at = None
-        if rng.random() < 0.6:  # s'arrête pour dire coucou d'un côté
-            side = rng.choice([0, 1])
-            pause_at = rng.randint(2, SIDE - 18) + side * (SIDE + GAP)
+        if rng.random() < 0.6:  # s'arrête pour dire coucou d'un côté, loin du bord arrondi de la caméra
+            pause_at = rng.choice([rng.randint(1, SIDE - 22), SIDE + GAP + rng.randint(6, SIDE - 17)])
         paused = False
         while -16 <= x <= width:
             walking_frame = len(steps) % 2

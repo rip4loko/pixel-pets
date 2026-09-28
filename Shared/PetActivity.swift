@@ -1,5 +1,4 @@
 import ActivityKit
-import CoreText
 import SwiftUI
 
 /// La Live Activity ne stocke qu'une date : le départ du « film » du défilé.
@@ -23,10 +22,10 @@ enum Parade {
 
     static var isRunning: Bool { !Activity<PetAttributes>.activities.isEmpty }
 
-    /// Point de départ au hasard dans le film d'1 h. Au moins 10 min écoulées,
-    /// pour que le minuteur affiche toujours « mm:ss ».
+    /// Point de départ au hasard dans le film d'1 h. Toujours plus d'1 h écoulée,
+    /// pour que le minuteur ait toujours la même forme « h:mm:ss ».
     static func randomStart() -> Date {
-        Date().addingTimeInterval(-Double(600 + Int.random(in: 0..<3600)))
+        Date().addingTimeInterval(-Double(3600 + Int.random(in: 0..<3600)))
     }
 
     /// Relance le défilé à un endroit au hasard (et repart pour 8 h).
@@ -52,18 +51,6 @@ enum Parade {
             await activity.end(nil, dismissalPolicy: .immediate)
         }
     }
-
-    /// L'app n'embarque pas les polices : elle emprunte celles du widget.
-    static func registerFontsFromWidget() {
-        guard let plugins = Bundle.main.builtInPlugInsURL,
-              let files = try? FileManager.default.contentsOfDirectory(
-                at: plugins.appendingPathComponent("PixelPetsWidget.appex"),
-                includingPropertiesForKeys: nil)
-        else { return }
-        for url in files where url.pathExtension == "ttf" {
-            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
-        }
-    }
 }
 
 /// Une bande du défilé : une couche de minuteur par couleur, empilées.
@@ -81,10 +68,11 @@ struct ParadeStrip: View {
                     .foregroundStyle(Color(hex: Parade.layerColors[layer]))
                     .contentTransition(.identity)
                     .lineLimit(1)
-                    // L'image est toujours à la fin du texte (après « 1: » quand il y a des heures) :
-                    // on garde la taille naturelle du texte et on cale sa fin sur le bord droit.
+                    // Chaque caractère fait 1/5 de l'image, et « 1:02:05 » en a 7 : on laisse
+                    // la place de 8 caractères pour que l'iPhone ne coupe jamais le texte.
+                    // L'image est toujours à la fin : on la cale sur le bord droit.
                     .multilineTextAlignment(.trailing)
-                    .fixedSize()
+                    .frame(width: width * 8 / 5, alignment: .trailing)
             }
         }
         .frame(width: width, height: Parade.fontSize, alignment: .trailing)
