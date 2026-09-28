@@ -173,7 +173,12 @@ def png(img):
 
 def build_font(name, frames, width):
     names = [".notdef", "space", "colon"] + DIGITS + [f"frame{i:04d}" for i in range(LOOP)]
+    # Chaque caractère du minuteur fait 1/5 de l'image, et l'image remplace
+    # exactement « mm:ss » (5 caractères). Ainsi la largeur est la même
+    # que l'iPhone mesure le texte brut ou le texte transformé.
     advance = width * SCALE * UPEM // PPEM
+    char = advance // 5
+    assert char * 5 == advance
     fb = FontBuilder(UPEM, isTTF=True)
     fb.setupGlyphOrder(names)
     cmap = {0x20: "space", 0x3A: "colon"}
@@ -181,7 +186,7 @@ def build_font(name, frames, width):
     fb.setupCharacterMap(cmap)
     empty = TTGlyphPen(None).glyph()
     fb.setupGlyf({n: empty for n in names})
-    fb.setupHorizontalMetrics({n: (advance if n.startswith("frame") else 0, 0) for n in names})
+    fb.setupHorizontalMetrics({n: (advance if n.startswith("frame") else char, 0) for n in names})
     fb.setupHorizontalHeader(ascent=UPEM, descent=0)
     fb.setupNameTable({"familyName": name, "styleName": "Regular", "psName": name,
                        "fullName": name, "uniqueFontIdentifier": name})

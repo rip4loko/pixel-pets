@@ -76,7 +76,11 @@ struct ParadeStrip: View {
         Text(timerInterval: start...start.addingTimeInterval(172_800), countsDown: false)
             .font(.custom(font, fixedSize: Parade.fontSize))
             .lineLimit(1)
-            .frame(width: width, height: Parade.fontSize, alignment: .leading)
+            // L'image est toujours à la fin du texte (après « 1: » quand il y a des heures) :
+            // on garde la taille naturelle du texte et on cale sa fin sur le bord droit.
+            .multilineTextAlignment(.trailing)
+            .fixedSize()
+            .frame(width: width, height: Parade.fontSize, alignment: .trailing)
             .clipped()
             .accessibilityLabel("Défilé de Pixel Pets")
     }
