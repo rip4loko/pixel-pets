@@ -39,3 +39,9 @@ jobs:
         with:
           name: PixelPets-ipa
           path: PixelPets.ipa
+
+      - name: Garder le projet Xcode (pour tester en simulateur)
+        uses: actions/upload-artifact@v4
+        with:
+          name: PixelPets-xcodeproj
+          path: PixelPets.xcodeproj
